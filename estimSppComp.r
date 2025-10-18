@@ -6,7 +6,21 @@ rm(list=ls())
 	# dat <- readRDS("data/Sofia.rds")
 	dat <- readRDS("data/HaVCtrl_strict.rds")
 	
+# initial data checks: should yield TRUE
 
+all(
+# test: dat is data.table
+	is.data.table(dat) & 
+# test: expected columns exist, are at the left of the data.table and in right order
+	all(colnames(dat)[1:5]==c("lanID","bucID","sp", "sppWeight_obs","totWeight_obs")) &
+# test: all species should exist in all buckets
+	length(unique(dat[,paste(sort(unique(sp)), collapse=","),
+		by=.(lanID, bucID)]$V1))==1 &
+# test: only one row per lan, buc, and species
+	all(dat[,.N, .(lanID,bucID,sp)]$N==1) &
+# test: only 1 totWeight_obs per landing
+	all(dat[,.N, .(lanID,totWeight_obs)][,.N, lanID]$N==1) == TRUE
+	)	
 
 
 # prep data

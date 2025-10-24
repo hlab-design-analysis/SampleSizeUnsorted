@@ -4,9 +4,10 @@ rm(list=ls())
 # load funs
 	source("R/doInitialChecks.R")
 	source("R/doSampleSizeGivenError.R")
-# load data
+
+# select data to load
 	dat <- readRDS("data/SPE.rds")
-	dat <- readRDS("data/Sofia.rds")
+	#dat <- readRDS("data/Sofia.rds")
 	#dat <- readRDS("data/HaVCtrl_strict.rds")
 	
 # do a set of initial data checks on input data
@@ -21,12 +22,6 @@ doInitialChecks(dat)
 # rounding to nearest integer is more consistent with definition of sampling unit, sampling fraction, etc
 # but introduces a minor error in landing level estimates.
 round_Nbuc_estim <- FALSE 
-
-# should all estimates be computed
-# if TRUE, calculations are also done for 
-all_estimates <- TRUE
-
-
 
 # add bucWeight_obs and nbuc_obs
 dat[,bucWeight_obs:=sum(sppWeight_obs), by=.(lanID, bucID)][,nbuc_obs:=length(unique(bucID)), by=.(lanID)]
@@ -56,8 +51,13 @@ dat[,Nbuc_estim:=ifelse(round_Nbuc_estim, round(totWeight_obs/bucWeightmean_obs)
 			dat$sppPercWeight_s2<-tmp$sppPercWeight_s2[match(paste0(dat$lanID, dat$sp),paste0(tmp$lanID, tmp$sp))]
 		
 		# building sppPercWeight_estim_var (with finite correction factor)
-			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*(1-nbuc_obs/Nbuc_estim)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)] 
-	
+			if(all(!is.na(dat$totWeight_obs))){
+			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*(1-nbuc_obs/Nbuc_estim)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)]
+			} else {
+			print("warning: some totWeight_obs not available: ignoring finite population correction")
+			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)]
+			}
+			
 	# se and cv		
 		dat[, sppPercWeight_estim_se:=sqrt(sppPercWeight_var_estim), by=.(lanID, sp)]
 		dat[, sppPercWeight_estim_cv:=round(sppPercWeight_estim_se/sppPercWeight_estim*100,2), by=.(lanID, sp)]
@@ -91,6 +91,10 @@ dat[,Nbuc_estim:=ifelse(round_Nbuc_estim, round(totWeight_obs/bucWeightmean_obs)
 		dat[, sppWeight_estim_CIlow:= sppWeight_estim-sppWeight_estim_errMargin, by=.(lanID, sp)]
 		dat[, sppWeight_estim_CIupp:= sppWeight_estim+sppWeight_estim_errMargin, by=.(lanID, sp)]
 
+		# example
+		unique(dat[sppPercWeight_estim>0,c("lanID","sp", "nbuc_obs","totWeight_obs","bucWeightmean_obs","sppPercWeight_estim","sppWeight_estim","sppWeight_estim_se","sppWeight_estim_CIlow","sppWeight_estim_CIupp")])
+
+
 } else {
 print("some totWeight_obs are NA: sppWeight_estim cannot be calculated")
 	
@@ -103,8 +107,6 @@ print("some totWeight_obs are NA: sppWeight_estim cannot be calculated")
 
 }
 
-		# example
-		unique(dat[sppPercWeight_estim>0,c("lanID","sp", "nbuc_obs","totWeight_obs","bucWeightmean_obs","sppPercWeight_estim","sppWeight_estim","sppWeight_estim_se","sppWeight_estim_CIlow","sppWeight_estim_CIupp")])
 
 
 #===============================================
@@ -121,9 +123,7 @@ print("some totWeight_obs are NA: sppWeight_estim cannot be calculated")
 # calculates sample size for diferent margins of error in absolute weight
 #===============================================
 
-	if(all(!is.na(dat$totWeight_obs))){
-
-		doSampleSizeGivenError(x=dat, e=c(1000,500,100), error_type="Absolute")
+	doSampleSizeGivenError(x=dat, e=c(1000,500,100), error_type="Absolute")
 		
 		
 		# example
@@ -132,15 +132,22 @@ print("some totWeight_obs are NA: sppWeight_estim cannot be calculated")
 
 
 # final checks:
-	all(
-	#sum of estimates spp weights == estimate total weight
-	dat[,.N,.(lanID,sp,totWeight_obs,sppWeight_estim)][, sum(sppWeight_estim),.(lanID,totWeight_obs)][,all.equal(V1,totWeight_obs)],
-	
-	#sum of estimates spp PercWeight ==  1
-	dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))]
-)
+	if(all(!is.na(dat$totWeight_obs))){
+		#sum of estimates spp weights == estimate total weight
+		test1<-dat[,.N,.(lanID,sp,totWeight_obs,sppWeight_estim)][, sum(sppWeight_estim),.(lanID,totWeight_obs)][,all.equal(V1,totWeight_obs)]
+		#sum of estimates spp PercWeight ==  1
+		test2<-dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))] 
+		if(!all(c(test1,test2))){stop()
+		} else {
+		test2<-dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))] 
+		if(!test2) stop()}
+	}
 
+# save estimates
 
 # add summary (mean, median, quantile)*possibility by size category or fishery; separate analysis for bycatch
+# doSampleSizeGivenError should issue a warning that will generate NASs when absolute and some totWeight_obs not available (SPE.data case)
+# initial checks should see that there is not an NA totWeight_obs in a landings with other totWeight_obs
+	# when this happens, all calculations can be made where totWeight_obs exists, and where not NAs are displayed
 	
-# save estimates
+

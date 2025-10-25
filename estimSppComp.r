@@ -9,24 +9,25 @@ rm(list=ls())
 # select data to load
 	dat <- readRDS("data/SPE.rds")
 	dat <- readRDS("data/Sofia.rds")
-	#dat <- readRDS("data/HaVCtrl_strict.rds")
+	dat <- readRDS("data/HaVCtrl_strict.rds")
+	dat <- readRDS("data/SLU.rds")
 	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
 
 # estimates weight Composition in Percentage and Absolute Weight
 	# note: aboslute estimates are only calculated if totWeight_obs is provided 
-dat <- estimateWeightComp (x = dat)
+dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 
 #===============================================
 # calculates sample size for diferent margins of error in proportion
 #===============================================
 
 
-		doSampleSizeGivenError(x=dat, e=c(0.05,0.03,0.01), error_type="Percent")
+		doSampleSizeGivenError(x=dat, e=c(0.03,0.05,0.07,0.10), error_type="Percent")
 		
 		# example
-		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs", "nbuc_obs","bucWeightmean_obs","sppPercWeight_s2","sppPercWeight_estim","n_005","n_003","n_001")])
+		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs", "nbuc_obs","bucWeightmean_obs","sppPercWeight_s2","sppPercWeight_estim","n_003","n_005","n_007","n_01")])
 
 #===============================================
 # calculates sample size for diferent margins of error in absolute weight
@@ -36,7 +37,7 @@ dat <- estimateWeightComp (x = dat)
 		
 		
 		# example
-		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim","n_005","n_003","n_001", "n_1000","n_500","n_100")])
+		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim","n_01","n_007","n_005","n_003", "n_1000","n_500","n_100")])
 	}
 
 

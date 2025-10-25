@@ -5,6 +5,7 @@
 #' @param x Input data (previously checked)
 #' @param round_Nbuc_estim should Nbuc_estim be rounded? if FALSE (default) Nbuc_estim is calculated as 
 #' totWeight_obs/bucWeightmean_obs. If TRUE rounds calculation of Nbuc_estim default to nearest integer
+#' @param finitePopCorr should finite population correction be used? defaults to FALSE
 #'
 #' @return same x object with estimates of species composition as columns
 #'
@@ -22,7 +23,7 @@
 
 	
 
-estimateWeightComp<-function(x, round_Nbuc_estim=FALSE){
+estimateWeightComp<-function(x, round_Nbuc_estim=FALSE, finitePopCorr=FALSE){
 
 
 # add bucWeight_obs and nbuc_obs
@@ -52,7 +53,11 @@ dat[,Nbuc_estim:=ifelse(round_Nbuc_estim, round(totWeight_obs/bucWeightmean_obs)
 		
 		# building sppPercWeight_estim_var (with finite correction factor)
 			if(all(!is.na(dat$totWeight_obs))){
+			if(finitePopCorr){
 			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*(1-nbuc_obs/Nbuc_estim)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)]
+			} else{
+			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)]
+			}	
 			} else {
 			print("warning: some totWeight_obs not available: ignoring finite population correction")
 			dat[, sppPercWeight_var_estim:=1/(bucWeightmean_obs^2)*sppPercWeight_s2/nbuc_obs,by=.(lanID,sp)]

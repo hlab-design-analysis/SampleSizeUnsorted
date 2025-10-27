@@ -2,15 +2,13 @@
 library(data.table)
 rm(list=ls())
 # load funs
-	source("R/doInitialChecks.R")
-	source("R/doSampleSizeGivenError.R")
-	source("R/estimateWeightComp.R")
+	source("R/sourceAllFunctions.R")
 
 # select data to load
 	dat <- readRDS("data/SPE.rds")
 	dat <- readRDS("data/Sofia.rds")
 	dat <- readRDS("data/HaVCtrl_strict.rds")
-	dat <- readRDS("data/SLU.rds")
+	#dat <- readRDS("data/SLU.rds")
 	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
@@ -38,7 +36,16 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 		
 		# example
 		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim","n_01","n_007","n_005","n_003", "n_1000","n_500","n_100")])
-	}
+
+#===============================================
+# summarise results
+#===============================================
+
+summariseMean(x = dat, group="sp")
+summariseMedian(x = dat, group="sp")
+summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975))
+
+
 
 
 # final checks:

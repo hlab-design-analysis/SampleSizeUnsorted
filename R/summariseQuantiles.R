@@ -1,5 +1,15 @@
 summariseQuantiles<-function(x, group=c(lanID,sp), probs=c(0.025,0.975)){
 
+#excludes from calculations landings with only 1 bucket
+if(any(x$nbuc_obs==1)) 
+{
+cat("\n")
+print(paste0("ATT: excluding ",nrow(x[nbuc_obs==1,.N,lanID])," landings with only 1 bucket: variance is not defined in those cases"))
+x<-x[nbuc_obs>1,]
+cat("\n")
+}
+
+
 # thanks to httpsrpubs.comjosemzSDbf for the function
 apply_func_and_get_names <- function(DT, func, ...) {
    res <- lapply(DT, func, ...)

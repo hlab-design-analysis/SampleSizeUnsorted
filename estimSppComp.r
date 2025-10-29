@@ -6,10 +6,6 @@ rm(list=ls())
 
 # select data to load
 	 dat <- readRDS("data/SPE.rds")
-	# dat <- readRDS("data/Sofia.rds")
-	 dat <- readRDS("data/HaVCtrl_strict.rds")
-	#dat <- readRDS("data/HaVCtrl_strict_extended.rds")
-	#dat <- readRDS("data/SLU.rds")
 
 # do a set of initial data checks on input data
 doInitialChecks(dat)

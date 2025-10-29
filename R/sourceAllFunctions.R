@@ -1,0 +1,6 @@
+	source("R/doInitialChecks.R")
+	source("R/doSampleSizeGivenError.R")
+	source("R/estimateWeightComp.R")
+	source("R/summariseMean.R")
+	source("R/summariseMedian.R")
+	source("R/summariseQuantiles.R")

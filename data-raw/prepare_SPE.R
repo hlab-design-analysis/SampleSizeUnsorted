@@ -1,10 +1,12 @@
-# loads and prepares SPE.dat
+# loads and prepares SPE.dat as input format
 
 rm(list=ls())
 library(data.table)
 
-
+# read data
 dat <- read.table("Original/SPE.dat", head=TRUE)
+
+# fixes format
 dat$totWeight_obs<-NA # from control
 dat<-data.table(dat)
 dat$sppWeight_obs<-dat$w; dat$w<-NULL

@@ -2,13 +2,15 @@
 
 rm(list=ls())
 
-library(reshape2)
 library(data.table)
 
 # load data
-	dat<-readRDS("Original/HaVCtrl_strict.rds")
+dat<-readRDS("Original/HaVCtrl_strict.rds")
+
+# anonymises lanID
+dat$lanID<-as.integer(factor(dat$lanID))
 
 # re-orders and selects columns
-dat<-dat[,.(lanID,bucID,sp, sppWeight_obs, totWeight_obs)]
+dat<-dat[order(lanID,bucID,sp),.(lanID,bucID,sp, sppWeight_obs, totWeight_obs)]
 
 saveRDS(dat, file="../data/HaVCtrl_strict.rds")

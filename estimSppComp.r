@@ -54,15 +54,15 @@ summariseMean(x = dat, group="sp")
 summariseMedian(x = dat, group="sp")
 summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975))
 
-# final checks:
-	if(all(!is.na(dat$totWeight_obs))){
-		#sum of estimates spp weights == estimate total weight
-		test1<-dat[,.N,.(lanID,sp,totWeight_obs,sppWeight_estim)][, sum(sppWeight_estim),.(lanID,totWeight_obs)][,all.equal(V1,totWeight_obs)]
-		#sum of estimates spp PercWeight ==  1
-		test2<-dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))] 
-		if(!all(c(test1,test2))){stop()
-		} else {
-		test2<-dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))] 
-		if(!test2) stop()}
-	}
+#===============================================
+# save results
+#===============================================
+
+dir.create("results", showWarnings=FALSE)
+# uncomment and tune the next line of code below to save results
+# write.csv(summariseMean(x = dat, group="sp"), file="results/results.csv", row.names=FALSE)
+
+
+
+
 

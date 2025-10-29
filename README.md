@@ -1,10 +1,6 @@
 # SampleSizeUnsorted
 Determination of sample size needed to attain specific margins of error in the species composition of unsorted landings.
 
-**Background**
-------------
-_To be added_
-
 **Methodology**
 ------------
 The procedure used to determine sample sizes is based on sampling theory (Särndal et al., 1992; Lohr, 2010). Full documentation can be found [**here (eng)**](https://github.com/hlab-design-analysis/SampleSizeUnsorted/blob/24b47feda353ea3aedf8f8241338983e3b6822c8/documentation/Determination%20of%20sample%20size.docx) and [**here (sve)**](https://github.com/hlab-design-analysis/SampleSizeUnsorted/blob/24b47feda353ea3aedf8f8241338983e3b6822c8/documentation/Determination%20of%20sample%20size.docx). An Example of its application to data collected from a Swedish fishery can be found [**here**](https://github.com/hlab-design-analysis/SampleSizeUnsorted/blob/7a161e05242b6de9a543298ce3422319aba4e4c3/documentation/Weighing%20Project%20Report_AnnexG1.pdf). Examples of its application to Finish and Irish control data can be found [**here**](https://github.com/hlab-design-analysis/SampleSizeUnsorted/blob/7a161e05242b6de9a543298ce3422319aba4e4c3/documentation/Weighing%20Project%20Report_AnnexG5.pdf).

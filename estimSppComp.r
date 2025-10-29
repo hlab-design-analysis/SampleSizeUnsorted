@@ -5,12 +5,12 @@ rm(list=ls())
 	source("R/sourceAllFunctions.R")
 
 # select data to load
-	dat <- readRDS("data/SPE.rds")
-	dat <- readRDS("data/Sofia.rds")
-	dat <- readRDS("data/HaVCtrl_strict.rds")
+	 dat <- readRDS("data/SPE.rds")
+	# dat <- readRDS("data/Sofia.rds")
+	 dat <- readRDS("data/HaVCtrl_strict.rds")
+	#dat <- readRDS("data/HaVCtrl_strict_extended.rds")
 	#dat <- readRDS("data/SLU.rds")
 
-	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
 
@@ -26,7 +26,7 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 		doSampleSizeGivenError(x=dat, e=c(0.03,0.05,0.07,0.10), error_type="Percent")
 		
 		# example
-		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs", "nbuc_obs","bucWeightmean_obs","sppPercWeight_s2","sppPercWeight_estim","n_003","n_005","n_007","n_01")])
+		unique(dat[nbuc_obs>1,c("lanID","sp","totWeight_obs", "nbuc_obs","bucWeightmean_obs","sppPercWeight_s2","sppPercWeight_estim","n_003","n_005","n_007","n_01")])
 
 #===============================================
 # calculates sample size for diferent margins of error in absolute weight
@@ -36,7 +36,7 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 		
 		
 		# example
-		unique(dat[sppPercWeight_estim>0,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim","n_01","n_007","n_005","n_003", "n_1000","n_500","n_100")])
+		unique(dat[nbuc_obs>1,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim","n_01","n_007","n_005","n_003", "n_1000","n_500","n_100")])
 
 
 #===============================================
@@ -46,8 +46,6 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 summariseMean(x = dat, group="sp")
 summariseMedian(x = dat, group="sp")
 summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975))
-
-
 
 
 

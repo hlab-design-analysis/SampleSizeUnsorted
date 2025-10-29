@@ -26,10 +26,12 @@ The input data to the script is a data.frame. The following columns should be pr
 - **_sppWeight_obs_**: weight of species _sp_ found inside the basket in kg.
 - **_totWeight_obs_**: total weight of the landing event in kg.
 
-A few consistency checks on input data are run in the beginning of the script (function <doInitialChecks>).
+A few consistency checks on input data are run in the beginning of the script (function `doInitialChecks`).
 
-**Authors**
+**Contributors**
 ------------
-Annica de Groote. Swedish University of Agricultural Sciences. 
+(cre, aut) Nuno Prista. Swedish University of Agricultural Sciences.
 
-Nuno Prista. Swedish University of Agricultural Sciences.
+(aut) Annica de Groote. Swedish University of Agricultural Sciences. 
+
+

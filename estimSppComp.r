@@ -6,7 +6,9 @@ rm(list=ls())
 
 # select data to load
 	 dat <- readRDS("data/SPE.rds")
-
+	#dat <- readRDS("data/SLU.rds")
+	
+	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
 
@@ -56,13 +58,4 @@ summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975))
 		test2<-dat[,.N,.(lanID,sp,sppPercWeight_estim)][, sum(sppPercWeight_estim),.(lanID)][,all.equal(V1,rep(1,.N))] 
 		if(!test2) stop()}
 	}
-
-
-# save estimates
-
-# add summary (mean, median, quantile)*possibility by size category or fishery; separate analysis for bycatch
-# doSampleSizeGivenError should issue a warning that will generate NASs when absolute and some totWeight_obs not available (SPE.data case)
-# initial checks should see that there is not an NA totWeight_obs in a landings with other totWeight_obs
-	# when this happens, all calculations can be made where totWeight_obs exists, and where not NAs are displayed
-	
 

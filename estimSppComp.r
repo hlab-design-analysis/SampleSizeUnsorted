@@ -1,13 +1,22 @@
+# =========================
+# SampleSizeUnsorted
+# Determination of sample size needed to attain specific margins of error 
+# 	in the species composition of unsorted landings.
+#
+# Nuno Prista & Annica de Groote
+# Swedish University of Agricultural Sciences
+# =========================
 
-library(data.table)
 rm(list=ls())
-# load funs
-	source("R/sourceAllFunctions.R")
 
-# select data to load
-	 dat <- readRDS("data/SPE.rds")
-	#dat <- readRDS("data/SLU.rds")
-	
+# read packages
+library(data.table)
+# load funs
+source("R/sourceAllFunctions.R")
+
+# comment/uncomment to select data to load
+dat <- readRDS("data/SPE.rds")
+#dat <- readRDS("data/SLU.rds")
 	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
@@ -17,7 +26,7 @@ doInitialChecks(dat)
 dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 
 #===============================================
-# calculates sample size for diferent margins of error in proportion
+# calculate sample size for diferent margins of error in proportion
 #===============================================
 
 
@@ -27,7 +36,7 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 		unique(dat[nbuc_obs>1,c("lanID","sp","totWeight_obs", "nbuc_obs","bucWeightmean_obs","sppPercWeight_s2","sppPercWeight_estim","n_003","n_005","n_007","n_01")])
 
 #===============================================
-# calculates sample size for diferent margins of error in absolute weight
+# calculate sample size for diferent margins of error in absolute weight
 #===============================================
 
 	doSampleSizeGivenError(x=dat, e=c(1000,500,100), error_type="Absolute")
@@ -44,8 +53,6 @@ dat <- estimateWeightComp (x = dat,round_Nbuc_estim=FALSE, finitePopCorr=FALSE)
 summariseMean(x = dat, group="sp")
 summariseMedian(x = dat, group="sp")
 summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975))
-
-
 
 # final checks:
 	if(all(!is.na(dat$totWeight_obs))){

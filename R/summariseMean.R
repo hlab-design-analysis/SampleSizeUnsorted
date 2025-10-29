@@ -9,8 +9,9 @@ x<-x[nbuc_obs>1,]
 cat("\n")
 }
 if (!is.null(group)) cols<-c(group,colnames(x)[grepl(colnames(x), pat="^n_")]) else cols<-c(colnames(x)[grepl(colnames(x), pat="^n_")])
-res<-unique(x[sppWeight_obs>0,..cols])
+res<-unique(x[nbuc_obs>1,..cols])
 out<-res[, lapply(.SD, mean), .SDcols=colnames(x)[grepl(colnames(x), pat="^n_")], by=group]
-merge(x[sppWeight_obs>0,..group][,.N,group],out)
+cols2<-c(group, "lanID")
+merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
 
 }

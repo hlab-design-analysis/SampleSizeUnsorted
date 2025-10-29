@@ -11,8 +11,9 @@ cat("\n")
 }
 target_cols <- colnames(x)[grepl(colnames(x), pat="^n_")]
 if (!is.null(group)) cols<-c(group,target_cols) else cols<-target_cols
-res<-unique(x[sppWeight_obs>0,..cols])
+res<-unique(x[nbuc_obs>1,..cols])
 out<-res[, lapply(.SD, median), .SDcols=target_cols, by=group]
-merge(x[sppWeight_obs>0,..group][,.N,group],out)
+cols2<-c(group, "lanID")
+merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
 }
 

@@ -19,7 +19,8 @@ tmp<-apply(data.frame(x)[,colnames(x)[grepl(colnames(x), pat="^n_")]],2,sum)
 n_cols<-names(tmp)[!is.na(tmp)]
 
 if (!is.null(group)) cols<-c(group,n_cols) else cols<-n_cols
-res<-unique(x[sppWeight_obs>0,..cols])
+res<-unique(x[nbuc_obs>1,..cols])
 out<-res[, apply_func_and_get_names(.SD, quantile, probs), .SDcols=cols[grepl(cols, pat="^n_")], by=group]
-merge(x[sppWeight_obs>0,..group][,.N,group],out)
+cols2<-c(group, "lanID")
+merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
 }

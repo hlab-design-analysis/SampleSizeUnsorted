@@ -50,3 +50,7 @@ rsconnect/
 /data-raw
 data/Sofia*
 results/
+data/DNK_3rd_party.rds
+data/EST.rds
+data/LV.rds
+data/SFPA_IRE.rds

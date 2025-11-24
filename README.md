@@ -21,7 +21,7 @@ Click the green button "Code" on the top of the page and select the option you a
 ------------
 The input data to the script is a data.frame. The following columns should be present:
 - **_lanID_**: a unique code that identifies the landing event. Should be the same in all buckets taken from that landing.
-- **_bucID_**: a unique code that identifies the landing. Should be the same in all species observed in that landing.
+- **_bucID_**: a unique code that identifies the bucket within a landing event. Should be the same in all species in that bucket.
 - **_sp_**: 3-letter FAO code of the species.
 - **_sppWeight_obs_**: weight of species _sp_ found inside the basket in kg.
 - **_totWeight_obs_**: total weight of the landing event in kg.

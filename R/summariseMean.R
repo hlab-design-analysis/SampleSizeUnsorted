@@ -9,9 +9,11 @@
 #'
 #' @return data.table with means by group
 #'
-#' @details A minimum of 2 samples is needed to calculate a variance. If the dataset contains
-#' extra variable, e.g., a fishery column, setting group=c("sp","fishery") will provide the 
-#' mean sample size needed to attain each error margin by sp and fishery.
+#' @details A minimum of 2 samples is needed to calculate a variance. If group == NULL averages
+#' sample sizes of species across all landings. If group == "lanID" averages
+#' the sample sizes of species within each landing. If the dataset contains
+#' extra variable, e.g., a fishery column, setting group=c("sp","fishery") averages the 
+#' sizes needed within each sp*fishery combination.
 #'
 #' @examples
 #' \dontrun{
@@ -35,7 +37,7 @@ x<-x[nbuc_obs>1,]
 cat("\n")
 }
 # filters columns
-if (!is.null(group)) cols<-c("lanID",group,colnames(x)[grepl(colnames(x), pat="^n_")]) else cols<-c("lanID",colnames(x)[grepl(colnames(x), pat="^n_")])
+if (!is.null(group)) cols<-c("lanID","sp",group,colnames(x)[grepl(colnames(x), pat="^n_")]) else cols<-c("lanID","sp",colnames(x)[grepl(colnames(x), pat="^n_")])
 res<-unique(x[nbuc_obs>1,..cols])
 # sets the minimum sample size
 if(!min_n==0) {
@@ -44,6 +46,11 @@ res<-cbind(res[,..group],res[, lapply(.SD, function(x) ifelse(x %in% c(0:min_n-1
 }
 # calculates the mean
 out<-res[, lapply(.SD, mean), .SDcols=colnames(x)[grepl(colnames(x), pat="^n_")], by=group]
+if (!is.null(group)) {
 cols2<-c(group, "lanID")
-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+out<-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+} else {
+out
+}
+out
 }

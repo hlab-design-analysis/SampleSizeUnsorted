@@ -9,7 +9,9 @@
 #'
 #' @return data.table with means by group
 #'
-#' @details A minimum of 2 samples is needed to calculate a variance. If the dataset contains
+#' @details A minimum of 2 samples is needed to calculate a variance. If group == NULL returns the
+#' median of sample sizes of species across all landings. If group == "lanID" returns the median of
+#' the sample sizes of species within each landing. If the dataset contains
 #' extra variable, e.g., a fishery column, setting group=c("sp","fishery") will provide the 
 #' median sample size needed to attain each error margin by sp and fishery.
 #'
@@ -35,8 +37,7 @@ x<-x[nbuc_obs>1,]
 cat("\n")
 }
 # filters columns
-target_cols <- colnames(x)[grepl(colnames(x), pat="^n_")]
-if (!is.null(group)) cols<-c("lanID",group,target_cols) else cols<-c("lanID",target_cols)
+if (!is.null(group)) cols<-c("lanID","sp",group,colnames(x)[grepl(colnames(x), pat="^n_")]) else cols<-c("lanID","sp",colnames(x)[grepl(colnames(x), pat="^n_")])
 res<-unique(x[nbuc_obs>1,..cols])
 # sets the minimum sample size
 if(!min_n==0) {
@@ -44,8 +45,12 @@ aux<-colnames(res)[grepl(colnames(res), pat="^n_")]
 res<-cbind(res[,..group],res[, lapply(.SD, function(x) ifelse(x %in% c(0:min_n-1),min_n,x)),.SDcols=aux])
 }
 # calculates the median
-out<-res[, lapply(.SD, median), .SDcols=target_cols, by=group]
+out<-res[, lapply(.SD, median), .SDcols=colnames(x)[grepl(colnames(x), pat="^n_")], by=group]
+if (!is.null(group)) {
 cols2<-c(group, "lanID")
-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+out<-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+} else {
+out
 }
-
+out
+}

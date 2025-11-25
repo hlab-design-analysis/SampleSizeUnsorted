@@ -46,7 +46,7 @@ apply_func_and_get_names <- function(DT, func, ...) {
 # filters out n cols with NAs (note: they appear when totWeight_obs has NAs)
 tmp<-apply(data.frame(x)[,colnames(x)[grepl(colnames(x), pat="^n_")]],2,sum)
 n_cols<-names(tmp)[!is.na(tmp)]
-if (!is.null(group)) cols<-c("lanID",group,n_cols) else cols<-c("lanID",n_cols)
+if (!is.null(group)) cols<-c("lanID","sp",group,n_cols) else cols<-c("lanID","sp",n_cols)
 res<-unique(x[nbuc_obs>1,..cols])
 
 # sets the minimum sample size
@@ -56,6 +56,11 @@ res<-cbind(res[,..group],res[, lapply(.SD, function(x) ifelse(x %in% c(0:min_n-1
 }
 # calculates the quantiles
 out<-res[, apply_func_and_get_names(.SD, quantile, probs), .SDcols=cols[grepl(cols, pat="^n_")], by=group]
+if (!is.null(group)) {
 cols2<-c(group, "lanID")
-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+out<-merge(x[nbuc_obs>1,.N,by=cols2][,.N,by=group],out)
+} else {
+out
+}
+out
 }

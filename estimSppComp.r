@@ -16,13 +16,13 @@ source("R/sourceAllFunctions.R")
 
 # comment/uncomment to select data to load
 dat <- readRDS("data/SPE.rds")
-dat <- readRDS("data/IRE_SFPA.rds")
-dat <- readRDS("data/LV.rds")
-dat <- readRDS("data/DNK_3rd_party.rds")
-dat <- readRDS("data/EST.rds")
 dat <- readRDS("data/SLU.rds")
+dat <- readRDS("data/DNK_3rd_party.rds")
 dat <- readRDS("data/FIN.rds")
-dat <- readRDS("data/SWE_SPF_Baltic_HuC.rds")
+dat <- readRDS("data/LVA.rds")
+dat <- readRDS("data/EST.rds")
+dat <- readRDS("data/IRL_SFPA.rds")
+dat <- readRDS("data/SWE_Baltic_HERSPR_HUC.rds")
 dat <- readRDS("data/SWE_other.rds")
 	
 # do a set of initial data checks on input data

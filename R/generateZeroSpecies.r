@@ -3,6 +3,7 @@
 
 generateZeroSpecies<-function(x)
 	{
+	
 	all_combinations <- x[, CJ(id = unique(paste(lanID, bucID)), sp = unique(sp))]
 	x[,id:=paste(lanID, bucID)]
 	
@@ -15,7 +16,7 @@ generateZeroSpecies<-function(x)
 	# completes variables
 	aux<-do.call("rbind",strsplit(x1$id," "))
 	target_v<-is.na(x1$lanID)
-	x1[target_v,"lanID"]<-as.integer(aux[target_v,][,1])
+	x1[target_v,"lanID"]<-aux[target_v,][,1]
 	x1[target_v,"bucID"]<-as.integer(aux[target_v,][,2])
 	for (i in colnames(x1)[!colnames(x1) %in% c("lanID","bucID","sppWeight_obs","id")])
 	{
@@ -23,5 +24,9 @@ generateZeroSpecies<-function(x)
 	}
 	# fills in zeros
 	x1$sppWeight_obs[paste(x1$id, x1$sp) %in% missing_combinations]<-0
+	# deletes id
+	x1$id<-NULL 
+	# reorder cols
+	setcolorder(x1, colnames(x)[colnames(x)!="id"])
 	x1
 	}

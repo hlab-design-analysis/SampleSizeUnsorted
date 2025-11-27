@@ -55,3 +55,8 @@ data/EST.rds
 data/LV.rds
 data/SFPA_IRE.rds
 data/FIN.rds
+data/IRL_SFPA.rds
+data/LVA.rds
+data/SWE_Baltic_HERSPR_HUC.rds
+data/SWE_other.rds
+data/all_countries.rds

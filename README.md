@@ -25,11 +25,16 @@ Click the green button "Code" on the top of the page and select the option you a
 **Input data**
 ------------
 The input data to the script is a data.frame. The following columns should be present:
+- **_ctry_**: 3-letter code of country providing the data
 - **_lanID_**: a unique code that identifies the landing event. Should be the same in all buckets taken from that landing.
 - **_bucID_**: a unique code that identifies the bucket within a landing event. Should be the same for all species in a bucket.
 - **_sp_**: 3-letter FAO code of the species.
 - **_sppWeight_obs_**: weight of species _sp_ found inside the basket in kg.
 - **_totWeight_obs_**: total weight of the landing event in kg.
+- **_year_**: year of data collection
+- **_fishery_**: fishery the landing comes from (unique within landing)
+- **_area_**: area(s) the landing comes from (unique within landing)
+- **_fisheryArea_**: fishery*area suggested for analysis 
 
 A few consistency checks on input data are run in the beginning of the script (function `doInitialChecks`).
 

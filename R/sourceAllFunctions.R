@@ -4,3 +4,4 @@
 	source("R/summariseMean.R")
 	source("R/summariseMedian.R")
 	source("R/summariseQuantiles.R")
+	source("R/summariseMax.R")

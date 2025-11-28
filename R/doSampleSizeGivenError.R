@@ -8,7 +8,7 @@
 
 		if (error_type=="Percent")
 			{
-			for (i in 1:length(e)) x[, paste0("n_", gsub("\\.","",as.character(e[i]))):=ceiling(1/bucWeightmean_obs^2*(1.96*sqrt(sppPercWeight_s2)/e[i])^2), by=.(lanID, sp)]
+			for (i in 1:length(e)) x[, paste0("n_", gsub("\\.","",sprintf("%0.2f",e[i]))):=ceiling(1/bucWeightmean_obs^2*(1.96*sqrt(sppPercWeight_s2)/e[i])^2), by=.(lanID, sp)]
 			}
 		if (error_type=="Absolute")
 			{

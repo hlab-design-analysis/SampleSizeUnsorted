@@ -81,6 +81,23 @@ apply(summariseMax(x = dat, group=c("lanID","sp"),min_n=2)[,4:10],2, quantile, p
 # save results
 #===============================================
 
+hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)$n_0.050, breaks=100)
+hist(summariseMax(x = dat[sppPercWeight_estim %between% c(0.10,0.90),], group=c("lanID","fisheryArea"), min_n=2)$n_0.050, breaks=100)
+
+par(mfrow=c(1,2))
+plot(ecdf(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)$n_0.050))
+plot(ecdf(summariseMax(x = dat[sppPercWeight_estim %between% c(0.10,0.90),], group=c("lanID","fisheryArea"), min_n=2)$n_0.050), col="red")
+
+par(mfrow=c(3,2))
+for (i in unique(dat$fisheryArea))
+{
+hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)[fisheryArea==i,]$n_0.050, breaks=100, main=i)
+}
+
+#===============================================
+# save results
+#===============================================
+
 dir.create("results", showWarnings=FALSE)
 fwrite(dat[nbuc_obs>1,], file="results/all_countries.csv")
 fwrite(summary_095, file="results/all_countries_summary_095wcs.csv")

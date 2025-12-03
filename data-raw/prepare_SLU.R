@@ -50,8 +50,7 @@ unique(dat$sp)
 # masks lanID
 dat$lanID<-as.integer(factor(dat$lanID))+1000
 
-
-# re-orders and selects columns
-dat<-dat[,.(lanID,bucID,sp, sppWeight_obs, totWeight_obs)]
+# prepares final format
+dat<-dat[,.(ctry="SWE",lanID,bucID,sp,sppWeight_obs,totWeight_obs, year="NA", fishery="NA", area="NA",fisheryArea="NA")][order(lanID,bucID,sp),]
 
 saveRDS(dat, file="../data/SLU.rds")

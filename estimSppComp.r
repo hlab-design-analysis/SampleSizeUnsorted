@@ -14,18 +14,20 @@ library(data.table)
 # load funs
 source("R/sourceAllFunctions.R")
 
-# comment/uncomment to select data to load
-# dat <- readRDS("data/SPE.rds")
-# dat <- readRDS("data/SLU.rds")
-# dat <- readRDS("data/DNK_3rd_party.rds")
-# dat <- readRDS("data/FIN.rds")
-# dat <- readRDS("data/LVA.rds")
-# dat <- readRDS("data/EST.rds")
-# dat <- readRDS("data/IRL_SFPA.rds")
-# dat <- readRDS("data/SWE_Baltic_HERSPR_HUC.rds")
-# dat <- readRDS("data/SWE_other.rds")
-# dat <- readRDS("data/all_countries.rds")
-dat <- rbind(readRDS("data/SWE_other.rds"),readRDS("data/SWE_Baltic_HERSPR_HUC.rds"))
+# select country/data: use 3-letter acronym or "all_countries" for entire dataset
+target_country<-"SWE"
+target_country<-"all_countries"
+
+if(target_country=="SPE") dat <- readRDS("data/SPE.rds")
+if(target_country=="SLU") dat <- readRDS("data/SLU.rds")
+if(target_country=="DNK") dat <- readRDS("data/DNK_3rd_party.rds")
+if(target_country=="FIN") dat <- readRDS("data/FIN.rds")
+if(target_country=="LVA") dat <- readRDS("data/LVA.rds")
+if(target_country=="EST") dat <- readRDS("data/EST.rds")
+if(target_country=="IRL") dat <- readRDS("data/IRL_SFPA.rds")
+if(target_country=="SWE") dat <- rbind(readRDS("data/SWE_other.rds"),readRDS("data/SWE_Baltic_HERSPR_HUC.rds"))
+if(target_country=="all_countries")  dat <- readRDS("data/all_countries.rds")
+
 	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
@@ -53,62 +55,60 @@ doSampleSizeGivenError(x=dat, e=c(10000, 5000, 1000, 500, 100), error_type="Abso
 unique(dat[nbuc_obs>1,c("lanID","sp","totWeight_obs","nbuc_obs","sppPercWeight_estim", "n_10000", "n_5000", "n_1000","n_500","n_100")])
 
 #===============================================
-# summarise results
+# examples of result summaries
 #===============================================
 
+# example: different types of summaries [with adjustment of n<2 to 2]
 summariseMean(x = dat, group="sp", min_n=2) # mean by sp
+summariseMean(x = dat, group=c("sp","lanID"), min_n=2) # mean by sp and lanID
 summariseMedian(x = dat, group="sp", min_n=2)
-summariseMax(x = dat, group="lanID", min_n=2)
+summariseMax(x = dat, group="lanID", min_n=2) # sample size needed to characterize all species in each lanID
 summariseQuantiles(x = dat, group="sp", probs=c(0.025,0.975), min_n=2)
 summariseQuantiles(x = dat, group=NULL, probs=c(0.025,0.975), min_n=2)
 
-# worst case scenario
-summariseMax(x = dat, group=c("fisheryArea"), min_n=2)
+# example: sample size needed to characterize all species in 95% of the landings [with adjustment of n<2 to 2]
+	# note on min_n: adjustment of min_n to a different values (e.g., min_n=5) means that for each landing, the minimum number of buckets to be sampled would be set to 5
+summariseMax(x = dat, group=c("fisheryArea"), min_n=5)
 
-# 95% among the worst case scenarios
+# example: 95% percentile of the worst case scenarios
 apply(summariseMax(x = dat, group="lanID", min_n=2)[,3:ncol(x)],2, quantile, prob=c(0.95))
 
-# per fishery
-	# 95% among the worst case scenarios
-	summary_095<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],t(apply(x[,4:ncol(x)],2,quantile, prob=c(0.95))))))[order(fisheryArea),]
+
+#===============================================
+# main results (agreed scenarios)
+#===============================================
+
+# per fisheryArea
 	# 90% among the worst case scenarios
-	summary_090<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],t(apply(x[,4:ncol(x)],2,quantile, prob=c(0.90))))))[order(fisheryArea),]
+	summary_090<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
+	# 95% among the worst case scenarios
+	summary_095<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
+	
+	# 95% among the worst case scenarios [restricted to nbuc_obs>min_bucs_obs
+	min_bucs_obs<-5
+	summary_090_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
+	summary_095_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
 
-# 95% of species landings [here 
-apply(summariseMax(x = dat, group=c("lanID","sp"),min_n=2)[,4:10],2, quantile, prob=c(0.95))
-
-#===============================================
-# save results
-#===============================================
-
-hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)$n_0.050, breaks=100)
-hist(summariseMax(x = dat[sppPercWeight_estim %between% c(0.10,0.90),], group=c("lanID","fisheryArea"), min_n=2)$n_0.050, breaks=100)
-
-par(mfrow=c(1,2))
-plot(ecdf(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)$n_0.050))
-plot(ecdf(summariseMax(x = dat[sppPercWeight_estim %between% c(0.10,0.90),], group=c("lanID","fisheryArea"), min_n=2)$n_0.050), col="red")
-
-par(mfrow=c(3,2))
-for (i in unique(dat$fisheryArea))
-{
-hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2)[fisheryArea==i,]$n_0.050, breaks=100, main=i)
-}
+	# adds indicator on results being based on a minimum amount of landings
+	min_n_landings<-15
+	summary_090_min_bucs_obs_5[,min_n_landings:=min_n_landings]; summary_090_min_bucs_obs_5[,meets_min_n_landings:=nLanIDs>=min_n_landings]
+	summary_095_min_bucs_obs_5[,min_n_landings:=min_n_landings]; summary_095_min_bucs_obs_5[,meets_min_n_landings:=nLanIDs>=min_n_landings]
+	
 
 #===============================================
-# save results
+# main results (agreed scenarios)
 #===============================================
 
-dir.create("results", showWarnings=FALSE)
-fwrite(dat[nbuc_obs>1,], file="results/all_countries.csv")
-fwrite(summary_095, file="results/all_countries_summary_095wcs.csv")
-fwrite(summary_090, file="results/all_countries_summary_090wcs.csv")
-fwrite(dat[nbuc_obs>1,], file="results/SWE.csv")
-fwrite(summary_095, file="results/SWE_summary_095wcs.csv")
-fwrite(summary_090, file="results/SWE_summary_090wcs.csv")
-write.xlsx(dat, files, append=T)
+dir_results<-paste0("results/",target_country,"/main_results/")
+dir.create(dir_results, showWarnings=FALSE, recursive=T)
 
-# uncomment and tune the next line of code below to save results
-# write.csv(summariseMean(x = dat, group="sp"), file="results/results.csv", row.names=FALSE)
+# saves all observed data and core lanID results
+fwrite(dat[nbuc_obs>1,], file=paste0(dir_results,target_country,"_lanID_results.csv"))
+
+# saves results
+fwrite(summary_095_min_bucs_obs_5, file=paste0(dir_results, target_country,"_summary_095wcs_min_bucs_obs_5.csv"))
+fwrite(summary_090_min_bucs_obs_5, file=paste0(dir_results, target_country,"_summary_090wcs_min_bucs_obs_5.csv"))
+
 
 
 

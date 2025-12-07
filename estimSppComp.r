@@ -71,7 +71,7 @@ summariseQuantiles(x = dat, group=NULL, probs=c(0.025,0.975), min_n=2)
 summariseMax(x = dat, group=c("fisheryArea"), min_n=5)
 
 # example: 95% percentile of the worst case scenarios
-apply(summariseMax(x = dat, group="lanID", min_n=2)[,3:ncol(x)],2, quantile, prob=c(0.95))
+apply(summariseMax(x = dat, group="lanID", min_n=5)[,3:ncol(x)],2, quantile, prob=c(0.95))
 
 
 #===============================================
@@ -80,14 +80,14 @@ apply(summariseMax(x = dat, group="lanID", min_n=2)[,3:ncol(x)],2, quantile, pro
 
 # per fisheryArea
 	# 90% among the worst case scenarios
-	summary_090<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
+	summary_090<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
 	# 95% among the worst case scenarios
-	summary_095<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
+	summary_095<-rbindlist(lapply(split(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
 	
 	# 95% among the worst case scenarios [restricted to nbuc_obs>min_bucs_obs
 	min_bucs_obs<-5
-	summary_090_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
-	summary_095_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
+	summary_090_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
+	summary_095_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
 
 	# adds indicator on results being based on a minimum amount of landings
 	min_n_landings<-15

@@ -28,7 +28,6 @@ if(target_country=="IRL") dat <- readRDS("data/IRL_SFPA.rds")
 if(target_country=="SWE") dat <- rbind(readRDS("data/SWE_other.rds"),readRDS("data/SWE_Baltic_HERSPR_HUC.rds"))
 if(target_country=="all_countries")  dat <- readRDS("data/all_countries.rds")
 
-	
 # do a set of initial data checks on input data
 doInitialChecks(dat)
 
@@ -71,7 +70,7 @@ summariseQuantiles(x = dat, group=NULL, probs=c(0.025,0.975), min_n=2)
 summariseMax(x = dat, group=c("fisheryArea"), min_n=5)
 
 # example: 95% percentile of the worst case scenarios
-apply(summariseMax(x = dat, group="lanID", min_n=5)[,3:ncol(x)],2, quantile, prob=c(0.95))
+apply(summariseMax(x = dat, group="lanID", min_n=5)[,3:5],2, quantile, prob=c(0.95))
 
 
 #===============================================

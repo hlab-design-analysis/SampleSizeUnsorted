@@ -14,19 +14,28 @@ library(data.table)
 # load funs
 source("R/sourceAllFunctions.R")
 
-# select country/data: use 3-letter acronym or "all_countries" for entire dataset
+# select country/data: use 3-letter acronym or "all_countries_*USOscenario*" for entire dataset
 target_country<-"SWE"
-target_country<-"all_countries"
+target_country<-"all_countries_USO_as_species"
+target_country<-"all_countries_USO_expert_judgement"
 
-if(target_country=="SPE") dat <- readRDS("data/SPE.rds")
-if(target_country=="SLU") dat <- readRDS("data/SLU.rds")
-if(target_country=="DNK") dat <- readRDS("data/DNK_3rd_party.rds")
-if(target_country=="FIN") dat <- readRDS("data/FIN.rds")
-if(target_country=="LVA") dat <- readRDS("data/LVA.rds")
-if(target_country=="EST") dat <- readRDS("data/EST.rds")
-if(target_country=="IRL") dat <- readRDS("data/IRL_SFPA.rds")
-if(target_country=="SWE") dat <- rbind(readRDS("data/SWE_other.rds"),readRDS("data/SWE_Baltic_HERSPR_HUC.rds"))
-if(target_country=="all_countries")  dat <- readRDS("data/all_countries.rds")
+# if(target_country=="SPE") dat <- readRDS("data/SPE.rds")
+# if(target_country=="SLU") dat <- readRDS("data/SLU.rds")
+#if(target_country=="DNK") dat <- readRDS("data/DNK_3rd_party_USO_expert_judgement.rds")
+# if(target_country=="FIN") dat <- readRDS("data/FIN.rds")
+# if(target_country=="LVA") dat <- readRDS("data/LVA.rds")
+# if(target_country=="EST") dat <- readRDS("data/EST.rds")
+# if(target_country=="IRL") dat <- readRDS("data/IRL_SFPA.rds")
+# if(target_country=="SWE") dat <- rbind(readRDS("data/SWE_other.rds"),readRDS("data/SWE_Baltic_HERSPR_HUC.rds"))
+
+# all countries scenarios [differing on the way DNK USO is handled]
+if(target_country=="all_countries_USO_expert_judgement")  dat <- readRDS("data/all_countries_USO_expert_judgement.rds")
+if(target_country=="all_countries_USO_deleted")  dat <- readRDS("data/all_countries_USO_deleted.rds")
+if(target_country=="all_countries_USO_allocated")  dat <- readRDS("data/all_countries_USO_allocated.rds")
+if(target_country=="all_countries_USO_as_species")  dat <- readRDS("data/all_countries_USO_as_species.rds")
+
+#lanIDtoRemove<-scan("data/lanID_DNK_NSea_SPR_withUSOabove5perc.txt", what="raw")
+#dat<-dat[!lanID %in% lanIDtoRemove,]
 
 # do a set of initial data checks on input data
 doInitialChecks(dat)
@@ -69,9 +78,8 @@ summariseQuantiles(x = dat, group=NULL, probs=c(0.025,0.975), min_n=2)
 	# note on min_n: adjustment of min_n to a different values (e.g., min_n=5) means that for each landing, the minimum number of buckets to be sampled would be set to 5
 summariseMax(x = dat, group=c("fisheryArea"), min_n=5)
 
-# example: 95% percentile of the worst case scenarios
+# example: 95% percentile of the worst case scenarios [all fisheryAreas]
 apply(summariseMax(x = dat, group="lanID", min_n=5)[,3:5],2, quantile, prob=c(0.95))
-
 
 #===============================================
 # main results (agreed scenarios)
@@ -85,8 +93,8 @@ apply(summariseMax(x = dat, group="lanID", min_n=5)[,3:5],2, quantile, prob=c(0.
 	
 	# 95% among the worst case scenarios [restricted to nbuc_obs>min_bucs_obs
 	min_bucs_obs<-5
-	summary_090_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
-	summary_095_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
+	summary_090_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,quantile, type=7, prob=c(0.90)))))))[order(fisheryArea),]
+	summary_095_min_bucs_obs_5<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(fisheryArea),]
 
 	# adds indicator on results being based on a minimum amount of landings
 	min_n_landings<-15

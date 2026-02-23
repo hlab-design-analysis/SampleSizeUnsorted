@@ -62,3 +62,7 @@ data/SWE_other.rds
 data/all_countries.rds
 data/SPE.dat
 data/lanID_DNK_NSeaNAtlantic_SPR_withUSOabove5perc.txt
+data/all_countries_USO_allocated.rds
+data/all_countries_USO_as_species.rds
+data/all_countries_USO_deleted.rds
+data/all_countries_USO_expert_judgement.rds

@@ -66,11 +66,12 @@ for (i in unique(dat$fisheryArea))
 # displays the more variable cases within each fishery
 #===============================================
 	
-	number_of_cases_to_display<-8
+	number_of_cases_to_display<-30
 	min_number_lanIDs<-15
 	target_fisheryAreas<-summary_095_min_bucs_obs_5[nLanIDs>=min_number_lanIDs]$fisheryArea
 	ls1<-split(dat[fisheryArea %in% target_fisheryAreas,], dat[fisheryArea %in% target_fisheryAreas,]$fisheryArea)
 	a<-lapply(ls1,function(x){print(head(unique(x[nbuc_obs>=5,.(fisheryArea, lanID, nbuc_obs, sp, n_0.050, sppWeight_estim, sppWeight_estim_CIlow, sppWeight_estim_CIupp)])[order(-n_0.050),],number_of_cases_to_display))})
+	a<-lapply(ls1,function(x){print(head(unique(x[nbuc_obs>=5,.(fisheryArea, lanID, nbuc_obs, n_0.050, totWeight_obs)])[, list(n_0.050=max(n_0.050)),.(fisheryArea, lanID, nbuc_obs, totWeight_obs)][order(-n_0.050),],number_of_cases_to_display))})
 
 
 #===============================================
@@ -80,12 +81,35 @@ for (i in unique(dat$fisheryArea))
 # To be done
 
 # position of the max in the ordered vector
-lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=2),by="fisheryArea"), function(x) { browser()
-pos <- which(unname(unlist(x[order(x[,"n_0.050"]),][,"n_0.050"]))==round(apply(x[order(x[,"n_0.050"])][,"n_0.050"],2,quantile, type=7, prob=c(0.95)))); pos
-if(length(pos)==0) pos <- max(which(unname(unlist(x[order(x[,"n_0.050"]),][,"n_0.050"]))<round(apply(x[order(x[,"n_0.050"])][,"n_0.050"],2,quantile, type=7, prob=c(0.95))))); pos
-#if(length(pos)>1) print("many cases: ambiguous")
-x[order(x[,"n_0.050"]),][pos,]$lanID
+lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {
+pos <- which(unname(unlist(x[order(-x[,"n_0.050"]),][,"n_0.050"]))==round(apply(x[order(x[,"n_0.050"])][,"n_0.050"],2,quantile, type=7, prob=c(0.95)))); pos
+if(length(pos)==0) pos <- max(which(unname(unlist(x[order(-x[,"n_0.050"]),][,"n_0.050"]))>round(apply(x[order(x[,"n_0.050"])][,"n_0.050"],2,quantile, type=7, prob=c(0.95))))); pos<-pos+1
+print(x$fisheryArea[1])
+if(length(pos)>1) print("many cases: ambiguous") else {
+#print(x[order(-x[,"n_0.050"]),][pos,]$lanID)
+print(x[order(-x[,"n_0.050"]),][pos,])
+}
 })
+
+
+target_prob=0.95
+	summary_095_min_bucs_obs_5_adj<-rbindlist(
+								lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,do_determine_closest))))}))[order(fisheryArea),]
+
+target_prob=0.90
+	summary_090_min_bucs_obs_5_adj<-rbindlist(
+								lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,do_determine_closest))))}))[order(fisheryArea),]
+	
+	
+do_determine_closest<-function(y){	
+	pos <- which(sort(y, decreasing=T)==round(quantile(y, type=7, prob=c(target_prob)))); pos
+if(length(pos)==0) pos <- max(which(sort(y, decreasing=T)>round(quantile(y, type=7, prob=c(target_prob))))); pos<-pos+1
+if(length(pos)>1)return(round(quantile(y, type=7, prob=c(target_prob)))) else {
+return(sort(y, decreasing=T)[pos])
+}
+}	
+
+
 
 #===============================================
 # displays the more variable cases in each country
@@ -103,18 +127,21 @@ x[order(x[,"n_0.050"]),][pos,]$lanID
 graph_dir_country<-paste0("results/",target_country,"/plots_histogram_sample_sizes/")
 if(!dir.exists(graph_dir_country)) dir.create(graph_dir_country, recursive=T)
 
-length(subset_fisheryArea<-summary_095_min_bucs_obs_5[nLanIDs>=14,]$fisheryArea)
+length(subset_fisheryArea<-summary_095_min_bucs_obs_5_adj[nLanIDs>=14,]$fisheryArea)
 
 for (i in unique(subset_fisheryArea))
 {
 windows()
-hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=5)[fisheryArea==i,]$n_0.050, breaks=100, main=paste0(i,": samp size for 0.05 e: ",summary_095_min_bucs_obs_5[fisheryArea==i,]$nLanIDs," lanIDs"), xlab="sample size")
+hist(summariseMax(x = dat, group=c("lanID","fisheryArea"), min_n=5)[fisheryArea==i,]$n_0.050, breaks=100, main=paste0(i,": samp size for 0.05 e: ",summary_095_min_bucs_obs_5_adj[fisheryArea==i,]$nLanIDs," lanIDs"), xlab="sample size")
 abline(v=summary_095_min_bucs_obs_5[fisheryArea==i,]$n_0.05, lty=2, col="orange")
+abline(v=summary_095_min_bucs_obs_5_adj[fisheryArea==i,]$n_0.05, lty=1, col="orange")
 abline(v=summary_090_min_bucs_obs_5[fisheryArea==i,]$n_0.05, lty=2, col="red")
-legend("topright", legend=c(paste0("95% of landings (",summary_095_min_bucs_obs_5[fisheryArea==i,]$n_0.05,")"),paste0("90% of landings (",summary_090_min_bucs_obs_5[fisheryArea==i,]$n_0.05,")")), lty=2, col=c("orange","red"))
+abline(v=summary_090_min_bucs_obs_5_adj[fisheryArea==i,]$n_0.05, lty=1, col="red")
+legend("topright", legend=c(paste0("95% of landings (",summary_095_min_bucs_obs_5[fisheryArea==i,]$n_0.05,")"),paste0("95% of landings - adj (",summary_095_min_bucs_obs_5_adj[fisheryArea==i,]$n_0.05,")"),
+								paste0("90% of landings (",summary_090_min_bucs_obs_5[fisheryArea==i,]$n_0.05,")"),paste0("90% of landings - adj (",summary_090_min_bucs_obs_5_adj[fisheryArea==i,]$n_0.05,")")), lty=c(2,1,2,1), col=c("orange","red","orange","red"))
 savePlot(paste0(graph_dir_country,i), type="png")
 }
-
+graphics.off()
 # ===================================
 # sensitivity analysis: number of minimum buckets in landings allowed for analysis
 # ===================================
@@ -126,6 +153,7 @@ graph_dir_country<-paste0("results/",target_country,"/plots_sensitivity_nbuc_obs
 out<-data.table()
 for(j in subset_fisheryArea)
 {
+print(j)
 res<-c()
 res_n<-c()
 for (i in c(2,5,10,15))
@@ -136,10 +164,12 @@ res<-c(res,tabela$n_0.050)
 res_n<-c(res_n,tabela$nLanIDs)
 }
 windows()
+if(length(res)==4){
 a<-barplot(res, names.arg=c(2,5,10,15), xlab="min_n_bucs admitted for analysis", ylab="sample size needed for 95% at 0.05e", main=j)
 text(x=a[,1], y=2, label=res_n)
 savePlot(paste0(graph_dir_country,j), type="png")
 out<-rbind(out, data.table(fisheryArea=j, min_nbuc_in_analysis=c(2,5,10,15), n_lanIDs_in_analysis=res_n, p95_n_0.05=res))
+} else print("not all classes")
 }
 
 table(dat[fisheryArea %in% subset_fisheryArea,.N,.(lanID, nbuc_obs, fisheryArea)][,2:3])
@@ -221,7 +251,8 @@ tmp2<-dat[sppWeight_obs>0,.N,.(fisheryArea,lanID,bucID, bucWeight_obs, sp)][, li
 
 	for (i in unique(tmp$fisheryArea))
 		{
-		#par(mfrow=c(2,3))
+		windows()
+		par(mfrow=c(2,3))
 		plot(number_spp~nbuc_obs, dat=tmp[fisheryArea==i,], main=i)
 		if(nrow(tmp[fisheryArea==i,])>1)abline(lm(number_spp~nbuc_obs, dat=tmp[fisheryArea==i,])$coef)		
 
@@ -283,19 +314,21 @@ dat[sppWeight_estim>0  & !is.na(sppWeight_estim_cv) & nbuc_obs>=5 & sp=="HER", .
 #===============================================
 	# estimates the cv that would have been achieved in each species under a proposed sample size
 
-proposed_sample_size0<-summary_095_min_bucs_obs_5[nLanIDs>10,.(fisheryArea,n_0.050)]
+proposed_sample_size0<-summary_095_min_bucs_obs_5_adj[nLanIDs>10,.(fisheryArea,n_0.050)]
 
-proposed_sample_size1<-data.table(fisheryArea=c('Baltic_HERSPR_HUC','Baltic_HERSPR_IND','Bothnia_FVE','Bothnia_HER','NAtlantic_MAC','NAtlantic_WHB','NSea_HER','NSea_NOP','NSea_SAN','NSea_SPR'),
+proposed_sample_size1<-data.table(fisheryArea=c('Baltic_HERSPR_HUC','Baltic_HERSPR_IND','Bothnia_FVE','Bothnia_HER','GoR_HER_HUC','Med_SPF','NAtlantic_MAC','NAtlantic_WHB','NSea_HER','NSea_NOP','NSea_SAN','NSea_SPR'),
 								 n_0.050=c(Baltic_HERSPR_HUC =  24,
-								 Baltic_HERSPR_IND = 30 ,
+								 Baltic_HERSPR_IND = 53 ,
 								 Bothnia_FVE =  20,
-								 Bothnia_HER =  6,
+								 Bothnia_HER =  4,
+								 GoR_HER_HUC = 3,
+								 Med_SPF = 6,
 								 NAtlantic_MAC =  9 ,
 								 NAtlantic_WHB =  1,
 								 NSea_HER =  3,
 								 NSea_NOP =  18,
 								 NSea_SAN =  2,
-								 NSea_SPR =  12) #21 alloc; 33 as species; 21 deleted; 12 expert
+								 NSea_SPR =  11) #21 alloc; 33 as species; 21 deleted; 12 expert
 								)
 
 
@@ -334,6 +367,10 @@ colnames(res_combined)<-gsub("50.x","50.0",colnames(res_combined))
 colnames(res_combined)<-gsub("50.y","50.1",colnames(res_combined))
 res_combined$nLanIDs<-summary_095_min_bucs_obs_5$nLanIDs[match(res_combined$fisheryArea,summary_095_min_bucs_obs_5$fisheryArea)]
 res_combined
+
+# to be done: think better about interpetation in terms of sppWeight 
+
+
 
 #===============================================	
 # evaluation of proposed sample sizes (% of spp weight)
@@ -376,16 +413,18 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 		hist(data_graph[sp=="SPR",]$percErrorMarginTotalWeight, breaks=seq(0,300,by=1))
 		hist(data_graph[!sp=="SPR",]$percErrorMarginTotalWeight, breaks=seq(0,300,by=1))
 
+		targetFisheryArea<-"Bothnia_FVE"
 		targetFisheryArea<-"Baltic_HERSPR_HUC"
 		targetFisheryArea<-"Baltic_HERSPR_IND"
-		targetFisheryArea<-"Bothnia_FVE"
 		targetFisheryArea<-"Bothnia_HER"
 		targetFisheryArea<-"NAtlantic_MAC"
 		targetFisheryArea<-"NAtlantic_WHB"
-		targetFisheryArea<-"NSea_HER"
 		targetFisheryArea<-"NSea_NOP"
 		targetFisheryArea<-"NSea_SAN"
 		targetFisheryArea<-"NSea_SPR"
+		targetFisheryArea<-"NSea_HER"
+		targetFisheryArea<-"Med_SPF"
+		targetFisheryArea<-"GoR_HER_HUC"
 		if(targetFisheryArea %in% c("Baltic_HERSPR_IND","Baltic_HERSPR_HUC")) targetSpp<-c("SPR","HER")
 		if(targetFisheryArea=="NSea_SPR") targetSpp<-c("SPR")
 		if(targetFisheryArea %in% c("Bothnia_HER", "NSea_HER")) targetSpp<-c("HER")
@@ -394,6 +433,8 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 		if(targetFisheryArea=="Bothnia_FVE") targetSpp<-c("FVE")
 		if(targetFisheryArea=="NAtlantic_MAC") targetSpp<-c("MAC")
 		if(targetFisheryArea=="NAtlantic_WHB") targetSpp<-c("WHB")
+		if(targetFisheryArea=="MED_SPF") targetSpp<-c("PIL","ANE")
+		if(targetFisheryArea=="GoR_HER_HUC") targetSpp<-c("HER")
 		data_graph<-dat[fisheryArea== targetFisheryArea & sppWeight_obs>0 & nbuc_obs>=5,.N,.(lanID,sp,nbuc_obs,sppPercWeight_estim_cv,sppWeight_estim_cv,percErrorMarginPercWeight=round(sppPercWeight_estim_errMargin/sppPercWeight_estim*100,1),percErrorMarginTotalWeight=round(sppWeight_estim_errMargin/sppWeight_estim*100,1))]
 		windows(15,15); par(mfrow=c(3,1), oma=c(1,1,3,1))
 		ylimite=c(0, max(table(data_graph[,.N,.(lanID,nbuc_obs)]$nbuc_obs)))
@@ -435,6 +476,11 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 						),.(year,sp)][order(-abs(total),sp, year),]
 
 		
+		data_graph<-dat[fisheryArea== targetFisheryArea & sppWeight_obs>0 & nbuc_obs>=2 & sp %in% targetSpp,.N,.(year, lanID,sp,nbuc_obs,sppWeight_estim,sppWeight_estim_var)]
+		data_graph[, list(total=round(sum(sppWeight_estim)/1000,1), 
+						CIlow=round((sum(sppWeight_estim)-1.96*sqrt(sum(sppWeight_estim_var)))/1000,1),
+						CIupp=round((sum(sppWeight_estim)+1.96*sqrt(sum(sppWeight_estim_var)))/1000,1)
+						),.(year,sp)][order(-abs(total),sp, year),]
 
 
 

@@ -178,7 +178,7 @@ for (i in summary_095_min_bucs_obs_5[nLanIDs>=14,]$fisheryArea)
 	{
 	print(i)
 	x<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea ==i,], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(target_prob)))))}))[order(lanSizeCateg),][,.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)][order(lanSizeCateg),]
-	if(i=="Baltic_HERSPR_HUC") write.xlsx(x[nLanIDs>=15,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,".xlsx"),sheetName=i) else write.xlsx(x[nLanIDs>14,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,".xlsx"),sheetName=i, append=T)
+	if(i=="Baltic_HERSPR_HUC") write.xlsx(x[nLanIDs>=15,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".xlsx"),sheetName=i) else write.xlsx(x[nLanIDs>14,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".xlsx"),sheetName=i, append=T)
 	print(x)
 }
 

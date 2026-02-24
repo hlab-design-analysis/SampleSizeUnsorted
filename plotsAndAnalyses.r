@@ -92,25 +92,6 @@ print(x[order(-x[,"n_0.050"]),][pos,])
 })
 
 
-target_prob=0.95
-	summary_095_min_bucs_obs_5_adj<-rbindlist(
-								lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,do_determine_closest))))}))[order(fisheryArea),]
-
-target_prob=0.90
-	summary_090_min_bucs_obs_5_adj<-rbindlist(
-								lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs,], group=c("lanID","fisheryArea"), min_n=5),by="fisheryArea"), function(x) {cbind(x[1,2],nLanIDs=nrow(x),round(t(apply(x[,4:ncol(x)],2,do_determine_closest))))}))[order(fisheryArea),]
-	
-	
-do_determine_closest<-function(y){	
-	pos <- which(sort(y, decreasing=T)==round(quantile(y, type=7, prob=c(target_prob)))); pos
-if(length(pos)==0) pos <- max(which(sort(y, decreasing=T)>round(quantile(y, type=7, prob=c(target_prob))))); pos<-pos+1
-if(length(pos)>1)return(round(quantile(y, type=7, prob=c(target_prob)))) else {
-return(sort(y, decreasing=T)[pos])
-}
-}	
-
-
-
 #===============================================
 # displays the more variable cases in each country
 #===============================================
@@ -500,3 +481,12 @@ dat1[sppWeight_estim<5000 & sppWeight_estim>0 & !is.na(pred_cv), .(lanID,sp,pred
 # analysis sppWeight_estim>10000
 dat1[sppWeight_estim>10000  & !is.na(sppWeight_estim_cv), .(lanID,sp,pred_cv, fisheryArea)][,list(sum(pred_cv>25)/.N), by=fisheryArea]
 
+#========================
+#standardize to x kg and see what is left from bycatch
+# =======================
+	
+	targetW<-25
+	targetW<-5
+
+	dat[, bucWeight:=sum(sppWeight_obs), .(lanID,bucID)][, prop:=sppWeight_obs/bucWeight][, new_sppWeight_obs:=round(sppWeight_obs/bucWeight*targetW,1)][, meanBucWeight:=mean(bucWeight), by="lanID"]
+	dat[, meanBucWeightFisheryArea:=mean(meanBucWeight),.(fisheryArea)][bucWeight>targetW & prop<.1 & nbuc_obs>=min_bucs_obs,list(ini=sum(sppWeight_obs>0), fin=sum(new_sppWeight_obs>0)),.(fisheryArea,meanBucWeightFisheryArea)][, dif:=round((fin-ini)/ini*100,0)][]

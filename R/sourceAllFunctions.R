@@ -5,3 +5,4 @@
 	source("R/summariseMedian.R")
 	source("R/summariseQuantiles.R")
 	source("R/summariseMax.R")
+	source("R/determineHighestObsWithinPercentile.R")

@@ -435,18 +435,12 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 # current evaluation of programmes - type 2 (more detail, 2 graphs)
 #===============================================
 
-	targetFisheryArea<-"Bothnia_FVE"
-		targetFisheryArea<-"Baltic_HERSPR_HUC"
-		targetFisheryArea<-"Bothnia_HER"
-		targetFisheryArea<-"NAtlantic_WHB"
-		targetFisheryArea<-"NSea_NOP"
-		targetFisheryArea<-"NSea_SAN"
-		targetFisheryArea<-"NSea_SPR"
-		targetFisheryArea<-"NSea_HER"
-		targetFisheryArea<-"Med_SPF"
-		targetFisheryArea<-"GoR_HER_HUC"
-		targetFisheryArea<-"NAtlantic_MAC"
-		targetFisheryArea<-"Baltic_HERSPR_IND"
+
+		graph_dir <- paste0("results/",target_country,"/plots_programme_eval/",format(Sys.Date(), format="%Y%m%d")); dir.create(graph_dir, recursive=T)
+
+		for(targetFisheryArea in summary_095_min_bucs_obs_5[nLanIDs>=14,]$fisheryArea)
+		{
+		# set up target species [complementary will be bycatch]
 		if(targetFisheryArea %in% c("Baltic_HERSPR_IND","Baltic_HERSPR_HUC")) targetSpp<-c("SPR","HER")
 		if(targetFisheryArea=="NSea_SPR") targetSpp<-c("SPR")
 		if(targetFisheryArea %in% c("Bothnia_HER", "NSea_HER")) targetSpp<-c("HER")
@@ -457,11 +451,11 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 		if(targetFisheryArea=="NAtlantic_WHB") targetSpp<-c("WHB")
 		if(targetFisheryArea=="MED_SPF") targetSpp<-c("PIL","ANE")
 		if(targetFisheryArea=="GoR_HER_HUC") targetSpp<-c("HER")
-		
+		# sets up data to plot
 		min_bucs_obs<-1
 		data_graph<-dat[, weightSampled:=sum(sppWeight_obs), by=lanID][fisheryArea== targetFisheryArea & sppWeight_obs>0 & nbuc_obs>=min_bucs_obs,.N,.(lanID,totWeight_obs, sp,nbuc_obs,weightSampled, sppPercWeight_estim_cv,sppWeight_estim_cv,sppPercWeight_estim_errMargin, percErrorMarginPercWeight=round(sppPercWeight_estim_errMargin/sppPercWeight_estim*100,1),percErrorMarginTotalWeight=round(sppWeight_estim_errMargin/sppWeight_estim*100,1))]
 		
-		# sampling strategy
+		# figure sampling strategy
 		windows(15,15); par(mfrow=c(3,2), oma=c(1,1,3,1))
 		ylimite=c(0, max(table(data_graph[,.N,.(lanID,nbuc_obs)]$nbuc_obs)))
 		if(!targetFisheryArea %in% c("NAtlantic_MAC","NAtlantic_WHB")) hist(data_graph[,.N,.(lanID,nbuc_obs)]$nbuc_obs, breaks=seq(0,60,by=1), main="No. Buckets Obs", xlab="n", ylim=ylimite)
@@ -471,8 +465,12 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 		hist(data_graph[,.N,.(lanID,meanWeightPerBucket=weightSampled/nbuc_obs)]$meanWeightPerBucket,breaks=seq(0,max(data_graph[,.N,.(lanID,meanWeightPerBucket=weightSampled/nbuc_obs)]$meanWeightPerBucket+5),by=5), main="mean Weight per bucket", xlab="mean Weight sampled (kg)")
 		plot(nbuc_obs~c(totWeight_obs/1000), data=data_graph[,.N,.(lanID,totWeight_obs, nbuc_obs)], xlab="Weight landed (ton)", ylab="n buckets observed", main="sampling overview 1")
 		plot(meanWeightPerBucket~nbuc_obs, data=data_graph[,.N,.(lanID,nbuc_obs, meanWeightPerBucket=weightSampled/nbuc_obs)], xlab="n buckets observed", ylab="mean Weight sampled (kg)", main="sampling overview 2")
-	
 		
+		savePlot(file.path(graph_dir, paste0(targetFisheryArea,"_sampling_overview_1.png")), type="png")
+
+
+		
+		# figure error results
 		windows(30,15); par(mfcol=c(2,2), oma=c(1,1,3,1))
 		# error margin in proportion
 		ylimite=c(0, max(table(cut(data_graph$sppPercWeight_estim_errMargin*100, breaks=seq(0,100,by=1), right = FALSE, ordered_result=T),data_graph$sp%in% targetSpp)))
@@ -493,6 +491,13 @@ dat[sppWeight_estim>0 & sp %in% c("HER") & fisheryArea=="NSea_SAN",.N,.(lanID, s
 		abline(v=5, lty=2, col="darkgreen")
 		title(main=paste0(targetFisheryArea,": lanIDs (n>=",min_bucs_obs,") = ",nrow(data_graph[,.N,.(lanID)])), outer=T, line=1, cex.main=1.5) 
 		
+		savePlot(file.path(graph_dir, paste0(targetFisheryArea,"_sampling_overview_2.png")), type="png")
+		
+		graphics.off()
+		
+		}
+		
+	
 		hist(data_graph[sp %in% targetSpp & percErrorMarginTotalWeight>25,]$totWeight_obs/1000)
 		hist(data_graph[sp %in% targetSpp & sppPercWeight_estim_errMargin*100>10,]$totWeight_obs/1000)
 		hist(data_graph[sp %in% targetSpp & percErrorMarginTotalWeight<25,]$totWeight_obs/1000)

@@ -15,7 +15,6 @@ source("R/sourceAllFunctions.R")
 
 # select country/data: use 3-letter acronym or "all_countries_*USOscenario*" for entire dataset
 target_country<-"FIN_2"
-target_country<-"all_countries_USO_as_species"
 target_country<-"all_countries_USO_expert_judgement"
 
 # if(target_country=="SPE") dat <- readRDS("data/SPE.rds")

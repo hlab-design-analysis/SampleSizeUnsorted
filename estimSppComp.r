@@ -1,10 +1,9 @@
 # =========================
-# SampleSizeUnsorted
-# Determination of sample size needed to attain specific margins of error 
-# 	in the species composition of unsorted landings.
+# Estimation of species composition & determination of sample size needed to 
+# 	attain pre-specified margins of error in the species composition of unsorted landings
 #
 # Nuno Prista & Annica de Groote
-# Swedish University of Agricultural Sciences
+# Swedish University of Agricultural Sciences, 2025-2026
 # =========================
 
 rm(list=ls())
@@ -15,7 +14,7 @@ library(data.table)
 source("R/sourceAllFunctions.R")
 
 # select country/data: use 3-letter acronym or "all_countries_*USOscenario*" for entire dataset
-target_country<-"SWE"
+target_country<-"FIN_2"
 target_country<-"all_countries_USO_as_species"
 target_country<-"all_countries_USO_expert_judgement"
 
@@ -33,6 +32,7 @@ if(target_country=="all_countries_USO_expert_judgement")  dat <- readRDS("data/a
 if(target_country=="all_countries_USO_deleted")  dat <- readRDS("data/all_countries_USO_deleted.rds")
 if(target_country=="all_countries_USO_allocated")  dat <- readRDS("data/all_countries_USO_allocated.rds")
 if(target_country=="all_countries_USO_as_species")  dat <- readRDS("data/all_countries_USO_as_species.rds"); file.info("data/all_countries_USO_as_species.rds")
+if(target_country=="FIN_2")  dat <- readRDS("data/FIN_2.rds"); file.info("data/FIN_2.rds")
 
 #lanIDtoRemove<-scan("data/lanID_DNK_NSea_SPR_withUSOabove5perc.txt", what="raw")
 #dat<-dat[!lanID %in% lanIDtoRemove,]
@@ -151,48 +151,10 @@ dir.create(dir_results, showWarnings=FALSE, recursive=T)
 fwrite(dat[nbuc_obs>1,], file=paste0(dir_results,target_country,"_lanID_results_",format(Sys.Date(), format="%Y%m%d"),".csv"))
 
 # saves results
-fwrite(summary_050_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_070wcs_min_bucs_obs_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
-fwrite(summary_070_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_070wcs_min_bucs_obs_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
-fwrite(summary_090_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_090wcs_min_bucs_obs_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
-fwrite(summary_095_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_095wcs_min_bucs_obs_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
-fwrite(summary_090_min_bucs_obs_5_adj[,1:7], file=paste0(dir_results, target_country,"_summary_090wcs_min_bucs_obs_",min_bucs_obs,"_adj_",format(Sys.Date(), format="%Y%m%d"),".csv"))
-fwrite(summary_095_min_bucs_obs_5_adj[,1:7], file=paste0(dir_results, target_country,"_summary_095wcs_min_bucs_obs_",min_bucs_obs,"_adj_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_050_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_070wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_070_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_070wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_090_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_090wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_095_min_bucs_obs_5[,1:7], file=paste0(dir_results, target_country,"_summary_095wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_090_min_bucs_obs_5_adj[,1:7], file=paste0(dir_results, target_country,"_summary_090wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_adj_",format(Sys.Date(), format="%Y%m%d"),".csv"))
+fwrite(summary_095_min_bucs_obs_5_adj[,1:7], file=paste0(dir_results, target_country,"_summary_095wcs_min_bucs_obs_",min_bucs_obs,"_min_n_",min_n,"_adj_",format(Sys.Date(), format="%Y%m%d"),".csv"))
 
-
-#===============================================
-# main results (agreed scenarios - by landing size category)
-#===============================================
-
-for (i in unique(dat$fisheryArea))
-{
-windows()
-hist(dat[fisheryArea==i,.N, .(lanID,totWeight_obs)]$totWeight_obs/1000, main=i)
-}
-
-	library(xlsx)
-	target_prob<-0.95
-	if("lanSizeCateg" %in% colnames(dat)) dat$lanSizeCateg<-NULL
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 10, 300, 500, 1000, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-
-for (i in summary_095_min_bucs_obs_5[nLanIDs>=14,]$fisheryArea)
-	{
-	print(i)
-	x<-rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea ==i,], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(target_prob)))))}))[order(lanSizeCateg),][,.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)][order(lanSizeCateg),]
-	if(i=="Baltic_HERSPR_HUC") write.xlsx(x[nLanIDs>=15,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".xlsx"),sheetName=i) else write.xlsx(x[nLanIDs>14,], file=paste0("results_size_categ",target_prob,"_min_",min_bucs_obs,"_",format(Sys.Date(), format="%Y%m%d"),".xlsx"),sheetName=i, append=T)
-	print(x)
-}
-
-	if("lanSizeCateg" %in% colnames(dat)) dat$lanSizeCateg<-NULL
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 10, 300, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-	rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea == c("Baltic_HERSPR_HUC"),], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(lanSizeCateg),][,.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)]
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 10, 300, 1000, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-	rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea == c("Baltic_HERSPR_IND"),], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.95)))))}))[order(lanSizeCateg),][,.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)]
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 100, 300, 1000, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-	rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea == c("NSea_HER"),], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.90)))))}))[order(lanSizeCateg),][c(4,1,2,3),.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)]
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 100, 500, 1000, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-	rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea == c("NSea_SPR"),], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.90)))))}))[order(lanSizeCateg),][c(4,1,2,3),.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)]
-	dat[order(totWeight_obs),lanSizeCateg:=cut(unique(totWeight_obs)/1000, breaks=c(0, 100, 500, 1000, 4000), right = FALSE, ordered_result=T), by=.(lanID)]
-	rbindlist(lapply(split(summariseMax(x = dat[nbuc_obs>=min_bucs_obs & fisheryArea == c("NSea_SAN"),], group=c("lanID","lanSizeCateg"), min_n=5),by="lanSizeCateg"), function(x) {cbind(x[1,2],nLanIDs=nrow(x), round(t(apply(x[,4:ncol(x)],2, quantile, type=7, prob=c(0.90)))))}))[order(lanSizeCateg),][c(4,1,2,3),.(lanSizeCateg, nLanIDs, n_0.050,n_0.100)]
-
-
-	
